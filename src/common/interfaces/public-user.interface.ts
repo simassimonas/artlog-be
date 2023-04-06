@@ -1,0 +1,8 @@
+import { Types } from 'mongoose';
+
+export interface IPublicUser {
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
