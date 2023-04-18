@@ -8,19 +8,26 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-import { User } from './schemas/users.schema';
+import { User, UserDocument } from './schemas/users.schema';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly UsersRepository: UsersRepository) {}
 
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: string): Promise<UserDocument> {
     return this.UsersRepository.findOne({ _id: id });
   }
 
   async getUserByUsername(username: string): Promise<User> {
     return this.UsersRepository.findOne({ username: username });
+  }
+
+  async getUserWithPasswordByUsername(username: string): Promise<User> {
+    return this.UsersRepository.findOne(
+      { username: username },
+      { password: true },
+    );
   }
 
   async checkIfUsernameExists(

@@ -21,11 +21,15 @@ import { SortDirection } from 'src/common/constants/sort-direction.enum';
 import { EnumValidationPipe } from 'src/common/validator/enum-validator.pipe';
 import { SortUsersBy } from 'src/common/constants/sort-users-by.enum';
 import { Role } from 'src/common/constants/role.enum';
+import { FriendshipsService } from './friendships/friendships.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly friendshipsService: FriendshipsService,
+  ) {}
 
   @Get(':id')
   async getUser(@Param('id') id: string): Promise<IPublicUser> {
@@ -69,5 +73,10 @@ export class UsersController {
   @Delete(':id')
   async deleteUser(@Param('id') id: string): Promise<{ deletedCount: number }> {
     return this.usersService.deleteUser(id);
+  }
+
+  @Get(':userId/friends')
+  async getFriends(@Param('userId') userId: string) {
+    return this.friendshipsService.getFriends(userId);
   }
 }

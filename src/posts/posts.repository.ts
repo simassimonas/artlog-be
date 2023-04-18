@@ -12,7 +12,7 @@ export class PostsRepository {
     return newPost.save();
   }
 
-  async findById(id: string): Promise<Post> {
+  async findById(id: string): Promise<PostDocument> {
     return this.postModel.findById(id).lean();
   }
 
@@ -23,7 +23,7 @@ export class PostsRepository {
   async findOneAndUpdate(
     filterQuery: FilterQuery<Post>,
     update: Partial<Post>,
-  ): Promise<Post> {
+  ): Promise<PostDocument> {
     return this.postModel
       .findOneAndUpdate(filterQuery, update, {
         new: true,
@@ -31,7 +31,7 @@ export class PostsRepository {
       .lean();
   }
 
-  async deleteOne(filterQuery: FilterQuery<Post>): Promise<Post> {
+  async deleteOne(filterQuery: FilterQuery<Post>): Promise<PostDocument> {
     return this.postModel.findOneAndDelete(filterQuery).lean();
   }
 
@@ -46,15 +46,35 @@ export class PostsRepository {
       .lean();
   }
 
+  // async find(
+  //   filterQuery: FilterQuery<Post>,
+  //   sortQuery: any = {},
+  //   projectionQuery: any = {},
+  // ): Promise<any[]> {
+  //   return this.postModel
+  //     .find(filterQuery, projectionQuery)
+  //     .sort(sortQuery)
+  //     .populate(['artId', 'userId'])
+  //     .lean();
+  // }
+
   async find(
     filterQuery: FilterQuery<Post>,
     sortQuery: any = {},
     projectionQuery: any = {},
+    skip?: number,
+    limit?: number,
   ): Promise<any[]> {
-    return this.postModel
+    const query = this.postModel
       .find(filterQuery, projectionQuery)
       .sort(sortQuery)
-      .populate('artId')
+      .populate(['artId', 'userId'])
       .lean();
+
+    if (skip !== undefined && limit !== undefined) {
+      query.skip(skip).limit(limit);
+    }
+
+    return query.exec();
   }
 }

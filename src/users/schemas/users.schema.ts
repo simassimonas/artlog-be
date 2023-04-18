@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class User {
   @Prop({ required: true })
   firstName: string;
@@ -18,8 +18,11 @@ export class User {
   @Prop({ required: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, select: false })
   password: string;
+
+  @Prop({ default: false })
+  isPrivate?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

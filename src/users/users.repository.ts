@@ -10,8 +10,11 @@ import { SortDirection } from 'src/common/constants/sort-direction.enum';
 export class UsersRepository {
   constructor(@InjectModel(User.name) private UserModel: Model<UserDocument>) {}
 
-  async findOne(userFilterQuery: FilterQuery<User>): Promise<User> {
-    return this.UserModel.findOne(userFilterQuery).lean();
+  async findOne(
+    userFilterQuery: FilterQuery<User>,
+    projectioQuery: any = {},
+  ): Promise<UserDocument> {
+    return this.UserModel.findOne(userFilterQuery, projectioQuery).lean();
   }
 
   async exists(

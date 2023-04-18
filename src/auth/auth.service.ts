@@ -14,7 +14,9 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user: User = await this.usersService.getUserByUsername(username);
+    const user: User = await this.usersService.getUserWithPasswordByUsername(
+      username,
+    );
 
     if (user && (await bcrypt.compare(password, user.password))) {
       const { password, ...publicUser } = user;
@@ -37,7 +39,6 @@ export class AuthService {
   }
 
   async logout(res: any) {
-    // This happens during login after user is checked in database (by local strategy)
     res
       .clearCookie('access_token', {
         secure: true,

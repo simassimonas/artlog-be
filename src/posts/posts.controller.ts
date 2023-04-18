@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -11,7 +14,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
-import { Post as PostSchema } from './schemas/post.schema';
+import { PostDocument, Post as PostSchema } from './schemas/post.schema';
 
 @UseGuards(JwtAuthGuard)
 @Controller('posts')
@@ -39,5 +42,56 @@ export class PostsController {
   @Get()
   async getAllPosts(): Promise<PostSchema[]> {
     return this.postsService.getAllPosts();
+  }
+
+  @Patch(':postId/like')
+  async likePost(
+    @Param('postId') postId: string,
+    @Req() req,
+  ): Promise<PostDocument> {
+    return this.postsService.toggleLike(postId, req.user.id, true);
+  }
+
+  @Patch(':postId/unlike')
+  async unlikePost(
+    @Param('postId') postId: string,
+    @Req() req,
+  ): Promise<PostDocument> {
+    return this.postsService.toggleLike(postId, req.user.id, false);
+  }
+
+  @Get('feed')
+  async getFeed(
+    @Req() req,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ): Promise<{
+    posts: PostDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    return this.postsService.getFeed(req.user.id, page, limit);
+  }
+
+  @Get('profile/:userId')
+  async getProfileFeed(
+    @Req() req,
+    @Param('userId') userId: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ): Promise<{
+    posts: PostDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    return this.postsService.getProfileFeed(req.user.id, userId, page, limit);
+  }
+
+  @Delete(':postId')
+  async deletePost(
+    @Req() req,
+    @Param('postId') postId: string,
+  ): Promise<PostDocument> {
+    return this.postsService.deletePost(postId, req.user.id);
   }
 }

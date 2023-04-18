@@ -14,12 +14,6 @@ export class Post {
   @Prop({ required: true })
   timezone: string;
 
-  //   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Art' })
-  //   art: Art;
-
-  //   @Prop({ type: [{ userId: { type: MongooseSchema.Types.ObjectId, ref: 'User' }, content: String }] })
-  //   comments: Comment[];
-
   @Prop({
     type: [{ type: MongooseSchema.Types.ObjectId, ref: 'User' }],
     default: [],
