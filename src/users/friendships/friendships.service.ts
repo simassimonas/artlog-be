@@ -4,6 +4,7 @@ import { FriendshipsRepository } from './friendships.repository';
 import { UsersRepository } from '../users.repository';
 import { User, UserDocument } from '../schemas/users.schema';
 import { EFriendshipResponse } from 'src/common/constants/friendship-response.enum';
+import { Schema, Types } from 'mongoose';
 
 @Injectable()
 export class FriendshipsService {
@@ -151,5 +152,22 @@ export class FriendshipsService {
       senderId,
       receiverId,
     );
+  }
+
+  async getVisibleUsersIds(userId: string) {
+    const friends = await this.getFriends(userId);
+    const friendsIds = friends.map((friend) => friend._id);
+
+    const visibleUsers = await this.usersRepository.find({
+      $or: [
+        { isPrivate: false },
+        { _id: userId },
+        { _id: { $in: friendsIds } },
+        { isPrivate: { $exists: false } },
+      ],
+    });
+
+    const visibleUsersIds = visibleUsers.map((user) => user._id.toString());
+    return visibleUsersIds;
   }
 }

@@ -15,6 +15,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
 import { PostDocument, Post as PostSchema } from './schemas/post.schema';
+import { get } from 'http';
 
 @UseGuards(JwtAuthGuard)
 @Controller('posts')
@@ -87,11 +88,33 @@ export class PostsController {
     return this.postsService.getProfileFeed(req.user.id, userId, page, limit);
   }
 
+  @Get('search')
+  async getSearchedPosts(
+    @Req() req,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('query') query: string,
+  ): Promise<{
+    posts: PostDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    return this.postsService.getSearch(req.user.id, query, page, limit);
+  }
+
   @Delete(':postId')
   async deletePost(
     @Req() req,
     @Param('postId') postId: string,
   ): Promise<PostDocument> {
     return this.postsService.deletePost(postId, req.user.id);
+  }
+
+  @Get(':postId')
+  async getPost(
+    @Req() req,
+    @Param('postId') postId: string,
+  ): Promise<PostDocument> {
+    return this.postsService.getPost(postId, req.user.id);
   }
 }

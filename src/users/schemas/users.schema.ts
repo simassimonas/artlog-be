@@ -23,6 +23,9 @@ export class User {
 
   @Prop({ default: false })
   isPrivate?: boolean;
+
+  @Prop()
+  profilePic?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

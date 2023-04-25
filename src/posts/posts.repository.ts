@@ -13,7 +13,7 @@ export class PostsRepository {
   }
 
   async findById(id: string): Promise<PostDocument> {
-    return this.postModel.findById(id).lean();
+    return this.postModel.findById(id).populate(['artId', 'userId']).lean();
   }
 
   async findAll(): Promise<Post[]> {
@@ -45,18 +45,6 @@ export class PostsRepository {
       .populate('artId')
       .lean();
   }
-
-  // async find(
-  //   filterQuery: FilterQuery<Post>,
-  //   sortQuery: any = {},
-  //   projectionQuery: any = {},
-  // ): Promise<any[]> {
-  //   return this.postModel
-  //     .find(filterQuery, projectionQuery)
-  //     .sort(sortQuery)
-  //     .populate(['artId', 'userId'])
-  //     .lean();
-  // }
 
   async find(
     filterQuery: FilterQuery<Post>,

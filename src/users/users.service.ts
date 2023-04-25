@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { FilterQuery, Schema } from 'mongoose';
 import { Role } from 'src/common/constants/role.enum';
 import { SortDirection } from 'src/common/constants/sort-direction.enum';
@@ -7,9 +11,10 @@ import { IPublicUser } from 'src/common/interfaces/public-user.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
+import * as fs from 'fs';
 import { User, UserDocument } from './schemas/users.schema';
 import { UsersRepository } from './users.repository';
+import * as path from 'path';
 
 @Injectable()
 export class UsersService {
@@ -67,10 +72,11 @@ export class UsersService {
     const _limit = Math.abs(limit) || Number(process.env.MAX_DB_RECORDS);
     const total = await this.count(_filter);
 
-    const users: User[] = await this.find(
+    const sortQuery = { [sortBy]: sortDirection };
+
+    const users: User[] = await this.UsersRepository.find(
       _filter,
-      sortBy,
-      sortDirection,
+      sortQuery,
       _skip,
       _limit,
     );
@@ -87,20 +93,56 @@ export class UsersService {
     };
   }
 
-  async find(
-    UsersFilterQuery?: FilterQuery<User>,
-    sortBy?: SortUsersBy,
-    sortDirection?: SortDirection,
-    skip?: number,
-    limit?: number,
-  ): Promise<User[]> {
-    return this.UsersRepository.find(
-      UsersFilterQuery,
-      sortBy,
-      sortDirection,
+  async searchUsers(
+    query: string = '',
+    sortDirection: SortDirection,
+    page: number,
+    limit: number,
+  ): Promise<{
+    users: UserDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    const filterQuery: FilterQuery<UserDocument> = {
+      $or: [
+        { username: { $regex: query, $options: 'i' } },
+        { firstName: { $regex: query, $options: 'i' } },
+        { lastName: { $regex: query, $options: 'i' } },
+      ],
+    };
+    const sortQuery = { createdAt: -1 };
+
+    return this.getPaginatedPosts(filterQuery, sortQuery, page, limit);
+  }
+
+  async getPaginatedPosts(
+    filterQuery: FilterQuery<UserDocument>,
+    sortQuery: any,
+    page: number,
+    limit: number,
+  ): Promise<{
+    users: UserDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    const skip = page * limit;
+
+    const users = await this.UsersRepository.find(
+      filterQuery,
+      sortQuery,
       skip,
       limit,
     );
+
+    const hasNextPage =
+      (await this.UsersRepository.find(filterQuery, {}, skip + limit, 1))
+        .length > 0;
+
+    return {
+      users,
+      hasNextPage,
+      nextPage: hasNextPage ? page + 1 : null,
+    };
   }
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -117,10 +159,37 @@ export class UsersService {
   }
 
   async updateUser(id: string, UserUpdates: UpdateUserDto): Promise<User> {
+    const l = 1;
     return this.UsersRepository.findOneAndUpdate({ id }, UserUpdates);
   }
 
   async deleteUser(id: string): Promise<{ deletedCount: number }> {
     return this.UsersRepository.findOneAndDelete({ id });
+  }
+
+  async updateProfilePic(
+    userId: string,
+    profilePic: Express.Multer.File,
+  ): Promise<UserDocument> {
+    try {
+      const filename = this.saveImageToFileSystem(profilePic);
+      return this.UsersRepository.findOneAndUpdate(
+        { _id: userId },
+        { profilePic: filename },
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to update profile picture',
+      );
+    }
+  }
+
+  saveImageToFileSystem(image: Express.Multer.File): string {
+    const fileExtension = path.extname(image.originalname);
+    const filename = uuidv4() + fileExtension;
+    const filepath = `./images/users/${filename}`;
+    fs.writeFileSync(filepath, image.buffer);
+
+    return filename;
   }
 }

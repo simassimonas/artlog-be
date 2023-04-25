@@ -148,6 +148,33 @@ export class PostsService {
     return this.getPaginatedPosts(filterQuery, sortQuery, page, limit);
   }
 
+  async getSearch(
+    userId: string,
+    query: string,
+    page: number,
+    limit: number,
+  ): Promise<{
+    posts: PostDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    const visibleUsersIds = await this.friendshipsService.getVisibleUsersIds(
+      userId,
+    );
+
+    const tagsFilter = query
+      ? { tags: { $elemMatch: { $regex: query, $options: 'i' } } }
+      : {};
+
+    const filterQuery: FilterQuery<PostDocument> = {
+      userId: { $in: visibleUsersIds },
+      ...tagsFilter,
+    };
+    const sortQuery = { createdAt: -1 };
+
+    return this.getPaginatedPosts(filterQuery, sortQuery, page, limit);
+  }
+
   async getPaginatedPosts(
     filterQuery: FilterQuery<PostDocument>,
     sortQuery: any,
@@ -202,5 +229,24 @@ export class PostsService {
     }
 
     return this.postsRepository.deleteOne({ _id: postId });
+  }
+
+  async getPost(postId: string, userId: string): Promise<PostDocument> {
+    const post: any = await this.postsRepository.findById(postId);
+    if (!post) {
+      throw new BadRequestException('Post doesnt exist');
+    }
+
+    const visibleUsersIds = await this.friendshipsService.getVisibleUsersIds(
+      userId,
+    );
+
+    if (!visibleUsersIds.includes(post.userId._id.toString())) {
+      throw new ForbiddenException(
+        'You do not have permission to view this post',
+      );
+    }
+
+    return post;
   }
 }

@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as fs from 'fs';
 import { firstValueFrom } from 'rxjs';
 import { mockBase64Image } from 'src/common/mock/base64image';
@@ -22,8 +22,7 @@ export class ArtService {
 
       return art;
     } catch (error) {
-      console.error('Error generating art:', error.message);
-      throw new Error('Failed to generate art');
+      throw new InternalServerErrorException('Failed to generate art');
     }
   }
 
@@ -55,7 +54,7 @@ export class ArtService {
 
   saveImageToFileSystem(image: string) {
     const filename = `${uuidv4()}.png`;
-    const filepath = `./images/${filename}`;
+    const filepath = `./images/art/${filename}`;
     fs.writeFileSync(filepath, image, { encoding: 'base64' });
     return filename;
   }

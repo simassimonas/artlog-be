@@ -32,7 +32,7 @@ export class ArtController {
 
   @Get('images/:filename')
   async getImage(@Param('filename') filename: string, @Res() res: Response) {
-    const filepath = `./images/${filename}`;
+    const filepath = `./images/art/${filename}`;
 
     if (!fs.existsSync(filepath)) {
       res.status(404).send('Image not found');

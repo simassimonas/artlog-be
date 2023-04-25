@@ -25,13 +25,14 @@ export class UsersRepository {
 
   async find(
     usersFilterQuery: FilterQuery<User>,
-    sortBy: SortUsersBy = SortUsersBy.username,
-    sortDirection: SortDirection = SortDirection.asc,
+    sortQuery: any = {},
     skip?: number,
     limit?: number,
-  ): Promise<User[]> {
+    selectFields?: string, // example 'firstName lastName username email'
+  ): Promise<UserDocument[]> {
     return this.UserModel.find(usersFilterQuery)
-      .sort({ [sortBy]: sortDirection })
+      .select(selectFields)
+      .sort(sortQuery)
       .skip(skip)
       .limit(limit)
       .lean();
@@ -50,7 +51,7 @@ export class UsersRepository {
   async findOneAndUpdate(
     usersFilterQuery: FilterQuery<User>,
     user: Partial<User>,
-  ): Promise<User> {
+  ): Promise<UserDocument> {
     return this.UserModel.findOneAndUpdate(usersFilterQuery, user, {
       new: true,
     }).lean();
