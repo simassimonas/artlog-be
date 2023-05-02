@@ -12,7 +12,14 @@ import { JwtService } from '@nestjs/jwt';
 import { NotificationsService } from './notifications.service';
 import { ENotificationType } from 'src/common/constants/notification-type.enum';
 
-@WebSocketGateway({ namespace: '/notifications' })
+@WebSocketGateway({
+  namespace: '/notifications',
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -49,12 +56,20 @@ export class NotificationsGateway
   async sendNotification(
     initiatorId: string,
     receiverId: string,
-    refId: string,
     type: ENotificationType,
+    refId: string,
+    refType = 'post',
   ) {
+    const notification = await this.notificationsService.createNotification(
+      initiatorId,
+      receiverId,
+      refId,
+      type,
+    );
+
     const receiverSocket = this.clients.get(receiverId);
     if (receiverSocket) {
-      receiverSocket.emit('notification', 'notification');
+      receiverSocket.emit('notification', notification);
     }
   }
 }

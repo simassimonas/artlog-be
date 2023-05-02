@@ -11,6 +11,8 @@ import { Response } from 'express';
 import { FriendshipsService } from 'src/users/friendships/friendships.service';
 import { FilterQuery, Schema } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { ENotificationType } from 'src/common/constants/notification-type.enum';
 
 @Injectable()
 export class PostsService {
@@ -18,6 +20,7 @@ export class PostsService {
     private readonly postsRepository: PostsRepository,
     private readonly friendshipsService: FriendshipsService,
     private readonly usersService: UsersService,
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   async canPost(userId: string, timezone: string, res: Response) {
@@ -213,10 +216,21 @@ export class PostsService {
   ): Promise<PostDocument> {
     const action = like ? '$addToSet' : '$pull';
 
-    return this.postsRepository.findOneAndUpdate(
+    const post: any = await this.postsRepository.findOneAndUpdate(
       { _id: postId },
       { [action]: { likes: userId } },
     );
+
+    const postAuthorId = post.userId._id.toString();
+    if (like && userId != postAuthorId) {
+      this.notificationsGateway.sendNotification(
+        userId,
+        postAuthorId,
+        ENotificationType.LIKE,
+        post._id,
+      );
+    }
+    return post;
   }
 
   async deletePost(postId: string, userId: string): Promise<PostDocument> {

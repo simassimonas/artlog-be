@@ -11,6 +11,9 @@ import { UsersService } from 'src/users/users.service';
 import { CommentsRepository } from './comments.repository';
 import { CreateCommentDto } from '../dto/create-comment.dto';
 import { CommentDocument } from '../schemas/comment.schema';
+import { ENotificationType } from 'src/common/constants/notification-type.enum';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+import { PostsService } from '../posts.service';
 
 @Injectable()
 export class CommentsService {
@@ -18,6 +21,8 @@ export class CommentsService {
     private readonly commentsRepository: CommentsRepository,
     private readonly friendshipsService: FriendshipsService,
     private readonly usersService: UsersService,
+    private readonly notificationsGateway: NotificationsGateway,
+    private readonly postsService: PostsService,
   ) {}
 
   async createComment(
@@ -25,8 +30,21 @@ export class CommentsService {
     postId,
     createCommentDto: CreateCommentDto,
   ): Promise<CommentDocument> {
-    const post = { userId, postId, likes: [], ...createCommentDto };
-    return this.commentsRepository.create(post);
+    const newComment = { userId, postId, likes: [], ...createCommentDto };
+    const comment = await this.commentsRepository.create(newComment);
+
+    const post: any = await this.postsService.getPost(postId, userId);
+    const postAuthorId = post.userId._id.toString();
+    if (userId != postAuthorId) {
+      this.notificationsGateway.sendNotification(
+        userId,
+        postAuthorId,
+        ENotificationType.COMMENT,
+        postId,
+      );
+    }
+
+    return comment;
   }
 
   async deleteComment(userId, commentId): Promise<{ deletedCount: number }> {

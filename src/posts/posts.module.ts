@@ -10,11 +10,13 @@ import { Comment, CommentSchema } from './schemas/comment.schema';
 import { CommentsService } from './comments/comments.service';
 import { CommentsRepository } from './comments/comments.repository';
 import { CommentsController } from './comments/comments.controller';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
     HttpModule,
     UsersModule,
+    NotificationsModule,
     MongooseModule.forFeature([
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },

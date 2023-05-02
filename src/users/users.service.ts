@@ -112,10 +112,10 @@ export class UsersService {
     };
     const sortQuery = { createdAt: -1 };
 
-    return this.getPaginatedPosts(filterQuery, sortQuery, page, limit);
+    return this.getPaginatedUsers(filterQuery, sortQuery, page, limit);
   }
 
-  async getPaginatedPosts(
+  async getPaginatedUsers(
     filterQuery: FilterQuery<UserDocument>,
     sortQuery: any,
     page: number,

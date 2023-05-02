@@ -15,7 +15,6 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostsService } from './posts.service';
 import { PostDocument, Post as PostSchema } from './schemas/post.schema';
-import { get } from 'http';
 
 @UseGuards(JwtAuthGuard)
 @Controller('posts')
