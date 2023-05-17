@@ -1,13 +1,11 @@
 import {
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { parse } from 'cookie';
-import { AuthSocket, WSAuthMiddleware } from './auth/ws-auth.middleware';
+import { AuthSocket, WSAuthMiddleware } from '../auth/ws-auth.middleware';
 import { JwtService } from '@nestjs/jwt';
 import { NotificationsService } from './notifications.service';
 import { ENotificationType } from 'src/common/constants/notification-type.enum';

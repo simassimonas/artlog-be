@@ -57,6 +57,19 @@ export class UsersRepository {
     }).lean();
   }
 
+  async updateMany(
+    filterQuery: FilterQuery<User>,
+    updateQuery: any,
+  ): Promise<{
+    acknowledged: boolean;
+    modifiedCount: number;
+    upsertedId: string;
+    upsertedCount: number;
+    matchedCount: number;
+  }> {
+    return this.UserModel.updateMany(filterQuery, updateQuery).lean();
+  }
+
   async findOneAndDelete(
     usersFilterQuery: FilterQuery<User>,
   ): Promise<{ deletedCount: number }> {

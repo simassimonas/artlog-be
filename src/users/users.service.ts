@@ -15,20 +15,25 @@ import * as fs from 'fs';
 import { User, UserDocument } from './schemas/users.schema';
 import { UsersRepository } from './users.repository';
 import * as path from 'path';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { FriendshipsService } from './friendships/friendships.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly UsersRepository: UsersRepository) {}
+  constructor(
+    private readonly UsersRepository: UsersRepository,
+    private readonly friendshipsService: FriendshipsService,
+  ) {}
 
   async getUserById(id: string): Promise<UserDocument> {
     return this.UsersRepository.findOne({ _id: id });
   }
 
-  async getUserByUsername(username: string): Promise<User> {
+  async getUserByUsername(username: string): Promise<UserDocument> {
     return this.UsersRepository.findOne({ username: username });
   }
 
-  async getUserWithPasswordByUsername(username: string): Promise<User> {
+  async getUserWithPasswordByUsername(username: string): Promise<UserDocument> {
     return this.UsersRepository.findOne(
       { username: username },
       { password: true },
@@ -98,6 +103,8 @@ export class UsersService {
     sortDirection: SortDirection,
     page: number,
     limit: number,
+    userId: string,
+    onlyVisible: boolean = false,
   ): Promise<{
     users: UserDocument[];
     hasNextPage: boolean;
@@ -110,6 +117,14 @@ export class UsersService {
         { lastName: { $regex: query, $options: 'i' } },
       ],
     };
+
+    if (onlyVisible && userId) {
+      const visibleUsersIds = await this.friendshipsService.getVisibleUsersIds(
+        userId,
+      );
+      filterQuery._id = { $in: visibleUsersIds };
+    }
+
     const sortQuery = { createdAt: -1 };
 
     return this.getPaginatedUsers(filterQuery, sortQuery, page, limit);
@@ -155,11 +170,11 @@ export class UsersService {
       username: createUserDto.username,
       email: createUserDto.email,
       password: createUserDto.password,
+      credits: Number(process.env.USER_INITIAL_CREDITS),
     });
   }
 
-  async updateUser(id: string, UserUpdates: UpdateUserDto): Promise<User> {
-    const l = 1;
+  async updateUser(id: string, UserUpdates: any): Promise<UserDocument> {
     return this.UsersRepository.findOneAndUpdate({ id }, UserUpdates);
   }
 
@@ -191,5 +206,29 @@ export class UsersService {
     fs.writeFileSync(filepath, image.buffer);
 
     return filename;
+  }
+
+  async addDailyCreditsForAllUsers(amount: number, maxAmount: number) {
+    await this.UsersRepository.updateMany(
+      {
+        $or: [
+          { credits: { $lt: maxAmount } },
+          { credits: { $exists: false } },
+          { credits: null },
+        ],
+      },
+      [
+        {
+          $set: {
+            credits: {
+              $min: [
+                { $add: [{ $ifNull: ['$credits', 0] }, amount] },
+                maxAmount,
+              ],
+            },
+          },
+        },
+      ],
+    );
   }
 }

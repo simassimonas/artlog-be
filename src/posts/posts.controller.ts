@@ -23,8 +23,15 @@ export class PostsController {
 
   @Post()
   async createPost(@Body() post: CreatePostDto, @Req() req, @Res() res) {
-    if (!(await this.postsService.canPost(req.user.id, post.timezone, res)))
+    const canPostStatus = await this.postsService.canPost(
+      req.user.id,
+      post.timezone,
+    );
+
+    if (!canPostStatus.canPost) {
+      res.status(403).json(canPostStatus);
       return;
+    }
 
     try {
       const createdPost = await this.postsService.createPost(req.user.id, post);
@@ -32,6 +39,11 @@ export class PostsController {
     } catch (error) {
       res.status(500).json(error.message);
     }
+  }
+
+  @Get('status')
+  async getCanPostStatus(@Req() req, @Query('timezone') timezone: string) {
+    return this.postsService.canPost(req.user.id, timezone);
   }
 
   @Get('users/:userId')

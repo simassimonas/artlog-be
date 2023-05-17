@@ -14,6 +14,7 @@ import { ArtService } from './art.service';
 import { Response, Request } from 'express';
 import * as fs from 'fs';
 import { GenerateArtDto } from './dto/generate-art.dto';
+import { ArtDocument } from './schemas/art.schema';
 
 @UseGuards(JwtAuthGuard)
 @Controller('art')
@@ -22,12 +23,7 @@ export class ArtController {
 
   @Post()
   async generateArt(@Body() generateArt: GenerateArtDto, @Req() req) {
-    const art = await this.artService.generateArt(
-      generateArt.prompt,
-      req.user.id,
-    );
-
-    return art;
+    return this.artService.generateArt(generateArt.prompt, req.user.id);
   }
 
   @Get('images/:filename')
@@ -47,5 +43,18 @@ export class ArtController {
     res.set('Content-Type', contentType);
 
     res.send(file);
+  }
+
+  @Get('')
+  async getArt(
+    @Req() req,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ): Promise<{
+    art: ArtDocument[];
+    hasNextPage: boolean;
+    nextPage: number;
+  }> {
+    return this.artService.getArt(req.user.id, page, limit);
   }
 }

@@ -6,6 +6,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseBoolPipe,
   ParseFilePipeBuilder,
   Patch,
   Post,
@@ -45,12 +46,21 @@ export class UsersController {
     sortDirection: SortDirection,
     @Query('page') page: number,
     @Query('limit') limit: number,
+    @Req() req,
+    @Query('onlyVisible', ParseBoolPipe) onlyVisible?: boolean,
   ): Promise<{
     users: UserDocument[];
     hasNextPage: boolean;
     nextPage: number;
   }> {
-    return this.usersService.searchUsers(query, sortDirection, page, limit);
+    return this.usersService.searchUsers(
+      query,
+      sortDirection,
+      page,
+      limit,
+      req.user.id,
+      onlyVisible,
+    );
   }
 
   @Get(':id')

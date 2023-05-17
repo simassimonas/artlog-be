@@ -7,7 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { ArtModule } from './art/art.module';
 import { PostsModule } from './posts/posts.module';
 import { NotificationsModule } from './notifications/notifications.module';
-import { ChatModule } from './chat/chat.module';
+import { CronManagerModule } from './cron-manager/cron-manager.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -17,7 +18,9 @@ import { ChatModule } from './chat/chat.module';
     ArtModule,
     PostsModule,
     NotificationsModule,
-    ChatModule,
+
+    CronManagerModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -23,7 +23,7 @@ export class PostsService {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
-  async canPost(userId: string, timezone: string, res: Response) {
+  async canPost(userId: string, timezone: string) {
     const lastPost = await this.postsRepository.findOne(
       { userId },
       { createdAt: -1 },
@@ -31,7 +31,7 @@ export class PostsService {
 
     if (!lastPost) {
       // first post, allow
-      return true;
+      return { canPost: true, timezoneChanged: false, timeUntilPost: 0 };
     }
 
     const lastPostDay = moment
@@ -48,17 +48,19 @@ export class PostsService {
       currentDayInLastPostTimezone.isSame(lastPostDay)
     ) {
       // same timezone, same day, deny post
-
       const currentTime = moment().utc().utcOffset(Number(timezone));
+      const currentTimeInString = currentTime.toString();
       const endOfDay = currentTime.clone().endOf('day');
+      const endOfDayInString = endOfDay.toString();
       const hoursLeftTillPost = Math.round(
         moment.duration(endOfDay.diff(currentTime)).asHours(),
       );
-      res.status(403).json({
+
+      return {
+        canPost: false,
         timezoneChanged: false,
         timeUntilPost: hoursLeftTillPost,
-      });
-      return false;
+      };
     }
 
     const currentDateInUtc = moment.utc();
@@ -66,18 +68,24 @@ export class PostsService {
       lastPost.createdAt,
       'hours',
     );
+
+    //lastPost.timezone !== timezone && hoursSinceLastPost < 24
     if (lastPost.timezone !== timezone && hoursSinceLastPost < 24) {
       // timezone changed and not enough time passed, deny post
-
-      res.status(403).json({
+      return {
+        canPost: false,
         timezoneChanged: true,
         timeUntilPost: 24 - hoursSinceLastPost,
-      });
-      return false;
+      };
+      // return {
+      //   canPost: false,
+      //   timezoneChanged: true,
+      //   timeUntilPost: 6,
+      // };
     }
 
     // allow post
-    return true;
+    return { canPost: true, timezoneChanged: false, timeUntilPost: 0 };
   }
 
   async createPost(userId, createPostDto: CreatePostDto): Promise<Post> {
@@ -234,9 +242,9 @@ export class PostsService {
   }
 
   async deletePost(postId: string, userId: string): Promise<PostDocument> {
-    const post = await this.postsRepository.findById(postId);
+    const post: any = await this.postsRepository.findById(postId);
 
-    if (userId != post.userId) {
+    if (userId != post.userId._id) {
       throw new ForbiddenException(
         'You do not have permission to delete this comment',
       );
