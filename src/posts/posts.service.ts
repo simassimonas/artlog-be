@@ -7,7 +7,6 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { PostsRepository } from './posts.repository';
 import { Post, PostDocument } from './schemas/post.schema';
 import * as moment from 'moment';
-import { Response } from 'express';
 import { FriendshipsService } from 'src/users/friendships/friendships.service';
 import { FilterQuery, Schema } from 'mongoose';
 import { UsersService } from 'src/users/users.service';
@@ -49,9 +48,7 @@ export class PostsService {
     ) {
       // same timezone, same day, deny post
       const currentTime = moment().utc().utcOffset(Number(timezone));
-      const currentTimeInString = currentTime.toString();
       const endOfDay = currentTime.clone().endOf('day');
-      const endOfDayInString = endOfDay.toString();
       const hoursLeftTillPost = Math.round(
         moment.duration(endOfDay.diff(currentTime)).asHours(),
       );
@@ -69,7 +66,6 @@ export class PostsService {
       'hours',
     );
 
-    //lastPost.timezone !== timezone && hoursSinceLastPost < 24
     if (lastPost.timezone !== timezone && hoursSinceLastPost < 24) {
       // timezone changed and not enough time passed, deny post
       return {
@@ -77,11 +73,6 @@ export class PostsService {
         timezoneChanged: true,
         timeUntilPost: 24 - hoursSinceLastPost,
       };
-      // return {
-      //   canPost: false,
-      //   timezoneChanged: true,
-      //   timeUntilPost: 6,
-      // };
     }
 
     // allow post

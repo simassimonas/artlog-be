@@ -7,8 +7,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AuthSocket, WSAuthMiddleware } from '../auth/ws-auth.middleware';
 import { JwtService } from '@nestjs/jwt';
-import { MessagesService } from './messages.service';
-import { MessageDocument } from './schemas/message.schema';
 
 @WebSocketGateway({
   namespace: '/messages',

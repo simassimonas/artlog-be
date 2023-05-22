@@ -26,19 +26,19 @@ export class NotificationsService {
 
   async getNotifications(
     userId: string,
-    page: number,
-    limit: number,
-  ): Promise<{
-    notifications: NotificationDocument[];
-    hasNextPage: boolean;
-    nextPage: number;
-  }> {
+    getUnseen: boolean,
+  ): Promise<NotificationDocument[]> {
     const filterQuery: FilterQuery<NotificationDocument> = {
       receiverId: userId,
     };
+
+    if (getUnseen) {
+      filterQuery.isSeen = false;
+    }
+
     const sortQuery = { createdAt: -1 };
 
-    return this.getPaginatedNotifications(filterQuery, sortQuery, page, limit);
+    return this.notificationsRepository.find(filterQuery, sortQuery);
   }
 
   async getPaginatedNotifications(

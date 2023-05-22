@@ -2,9 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Friendship, FriendshipDocument } from '../schemas/friendships.schema';
 import { FriendshipsRepository } from './friendships.repository';
 import { UsersRepository } from '../users.repository';
-import { User, UserDocument } from '../schemas/users.schema';
+import { UserDocument } from '../schemas/users.schema';
 import { EFriendshipResponse } from 'src/common/constants/friendship-response.enum';
-import { Schema, Types } from 'mongoose';
 
 @Injectable()
 export class FriendshipsService {

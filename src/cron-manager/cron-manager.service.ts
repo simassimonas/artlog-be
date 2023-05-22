@@ -15,11 +15,8 @@ export class CronManagerService implements OnModuleInit {
   }
 
   initializeDailyCredits() {
-    const interval = process.env.AI_ART_FREE_CREDITS_CRON_PATTERN;
     try {
-      //const dailyCreditsCronJob = new CronJob(
-      //     process.env.AI_ART_FREE_CREDITS_CRON_PATTERN,
-      //   );
+      // for future implementation
     } catch (error) {
       console.log('Daily Credits Cron Job failed to start', error.message);
     }

@@ -23,11 +23,11 @@ export class NotificationsRepository {
   }
 
   async findAll(): Promise<NotificationDocument[]> {
-    return await this.notificationModel.find();
+    return this.notificationModel.find();
   }
 
   async findOneById(id: string): Promise<NotificationDocument> {
-    return await this.notificationModel
+    return this.notificationModel
       .findById(id)
       .populate(['initiatorId', 'receiverId'])
       .lean();

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ArtService } from './art.service';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import * as fs from 'fs';
 import { GenerateArtDto } from './dto/generate-art.dto';
 import { ArtDocument } from './schemas/art.schema';

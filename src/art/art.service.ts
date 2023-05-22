@@ -39,7 +39,7 @@ export class ArtService {
       const image = await this.fetchImage(prompt);
       const filename = this.saveImageToFileSystem(image);
       const art = await this.saveImageToDb(filename, userId, prompt);
-      const updatedUser = await this.usersService.updateUser(userId, {
+      await this.usersService.updateUser(userId, {
         $inc: { credits: -Number(process.env.AI_ART_GENERATION_COST) },
       });
 
@@ -54,7 +54,10 @@ export class ArtService {
       await delay(1500); // mock the wait time of real AI art generator
       return mockBase64Image;
     }
-    const apiUrl = process.env.AI_ART_GENERATOR_API;
+    const apiUrl =
+      process.env.AI_ART_GENERATOR_API +
+      '/' +
+      process.env.AI_ART_GENERATOR_API_PATH;
 
     const requestBody = {
       prompt: prompt,
@@ -64,7 +67,7 @@ export class ArtService {
       image_width: 512,
       num_images: 1,
       guidance_scale: 7,
-      steps: 90,
+      steps: 50,
       seed: 4231,
     };
 

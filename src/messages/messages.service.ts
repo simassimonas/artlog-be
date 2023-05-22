@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { MessagesRepository } from './messages.repository';
-import { CreateMessageDto } from './dtos/create-message.dto';
 import { Message, MessageDocument } from './schemas/message.schema';
 import { MessagesGateway } from './messages.gateway';
 import { FilterQuery } from 'mongoose';

@@ -19,7 +19,7 @@ export class MessagesRepository {
   }
 
   async findOneById(id: string): Promise<MessageDocument> {
-    return await this.messageModel.findById(id).populate(['from', 'to']).lean();
+    return this.messageModel.findById(id).populate(['from', 'to']).lean();
   }
 
   async find(

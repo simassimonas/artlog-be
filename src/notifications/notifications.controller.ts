@@ -21,14 +21,10 @@ export class NotificationsController {
   @Get('')
   async getNotifications(
     @Req() req,
-    @Query('page') page: number,
-    @Query('limit') limit: number,
-  ): Promise<{
-    notifications: NotificationDocument[];
-    hasNextPage: boolean;
-    nextPage: number;
-  }> {
-    return this.notificationsService.getNotifications(req.user.id, page, limit);
+    @Query('unseen') unseen: string,
+  ): Promise<NotificationDocument[]> {
+    const getUnseen: boolean = unseen == 'false' ? false : true;
+    return this.notificationsService.getNotifications(req.user.id, getUnseen);
   }
 
   @Get('unseen-count')

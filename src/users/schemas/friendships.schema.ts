@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { User } from './users.schema';
 
 export type FriendshipDocument = Friendship & Document;
 

@@ -4,18 +4,15 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { FilterQuery, Schema } from 'mongoose';
-import { Role } from 'src/common/constants/role.enum';
 import { SortDirection } from 'src/common/constants/sort-direction.enum';
 import { SortUsersBy } from 'src/common/constants/sort-users-by.enum';
 import { IPublicUser } from 'src/common/interfaces/public-user.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import * as fs from 'fs';
 import { User, UserDocument } from './schemas/users.schema';
 import { UsersRepository } from './users.repository';
 import * as path from 'path';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { FriendshipsService } from './friendships/friendships.service';
 
 @Injectable()
@@ -99,7 +96,7 @@ export class UsersService {
   }
 
   async searchUsers(
-    query: string = '',
+    query: string,
     sortDirection: SortDirection,
     page: number,
     limit: number,

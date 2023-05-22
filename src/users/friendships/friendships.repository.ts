@@ -88,7 +88,5 @@ export class FriendshipsRepository {
 
   async delete(friendshipId: string): Promise<{ deletedCount: number }> {
     return this.friendshipsModel.deleteOne({ _id: friendshipId });
-    //const result = await this.friendshipsModel.deleteOne({ _id: friendshipId });
-    //return { deletedCount: result.deletedCount };
   }
 }
